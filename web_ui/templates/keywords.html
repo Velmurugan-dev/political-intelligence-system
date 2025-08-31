@@ -1,0 +1,512 @@
+{% extends "base.html" %}
+
+{% block title %}Keywords Management - Political Intelligence{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>🔍 Keywords Management</h2>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addKeywordModal">
+        <i class="fas fa-plus"></i> Add Keyword
+    </button>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3">
+                <label for="filterCompetitor" class="form-label">Filter by Competitor</label>
+                <select class="form-select" id="filterCompetitor" onchange="applyFilters()">
+                    <option value="">All Competitors</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="filterPlatform" class="form-label">Filter by Platform</label>
+                <select class="form-select" id="filterPlatform" onchange="applyFilters()">
+                    <option value="">All Platforms</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="filterLanguage" class="form-label">Filter by Language</label>
+                <select class="form-select" id="filterLanguage" onchange="applyFilters()">
+                    <option value="">All Languages</option>
+                    <option value="ta">Tamil</option>
+                    <option value="en">English</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button class="btn btn-outline-secondary w-100" onclick="clearFilters()">
+                    <i class="fas fa-times"></i> Clear Filters
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Keywords Table -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped" id="keywordsTable">
+                <thead>
+                    <tr>
+                        <th>Keyword</th>
+                        <th>Competitor</th>
+                        <th>Platform</th>
+                        <th>Language</th>
+                        <th>Type</th>
+                        <th>Frequency</th>
+                        <th>Last Searched</th>
+                        <th>Results Found</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="keywordsTableBody">
+                    <tr>
+                        <td colspan="10" class="text-center text-muted">Loading keywords...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add Keyword Modal -->
+<div class="modal fade" id="addKeywordModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">🔍 Add New Keyword</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addKeywordForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="keywordCompetitor" class="form-label">Competitor *</label>
+                            <select class="form-select" id="keywordCompetitor" required>
+                                <option value="">Select competitor...</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="keywordPlatform" class="form-label">Platform *</label>
+                            <select class="form-select" id="keywordPlatform" required>
+                                <option value="">Select platform...</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="keywordText" class="form-label">Keyword *</label>
+                        <input type="text" class="form-control" id="keywordText" placeholder="e.g., அதிமுக or AIADMK" required>
+                        <div class="form-text">Enter the search keyword in Tamil or English</div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="keywordLanguage" class="form-label">Language</label>
+                            <select class="form-select" id="keywordLanguage">
+                                <option value="ta">Tamil</option>
+                                <option value="en">English</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="keywordType" class="form-label">Keyword Type</label>
+                            <select class="form-select" id="keywordType">
+                                <option value="general">General</option>
+                                <option value="party_name">Party Name</option>
+                                <option value="leader_name">Leader Name</option>
+                                <option value="slogan">Slogan</option>
+                                <option value="policy">Policy</option>
+                                <option value="event">Event</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="keywordFrequency" class="form-label">Search Frequency (hours)</label>
+                            <select class="form-select" id="keywordFrequency">
+                                <option value="1">Every Hour</option>
+                                <option value="2">Every 2 Hours</option>
+                                <option value="4" selected>Every 4 Hours</option>
+                                <option value="6">Every 6 Hours</option>
+                                <option value="12">Every 12 Hours</option>
+                                <option value="24">Daily</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="addKeyword()">
+                    <i class="fas fa-plus"></i> Add Keyword
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bulk Add Keywords Modal -->
+<div class="modal fade" id="bulkKeywordsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">📄 Bulk Add Keywords</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="bulkKeywordsForm">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="bulkCompetitor" class="form-label">Competitor *</label>
+                            <select class="form-select" id="bulkCompetitor" required>
+                                <option value="">Select competitor...</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="bulkPlatform" class="form-label">Platform *</label>
+                            <select class="form-select" id="bulkPlatform" required>
+                                <option value="">Select platform...</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="bulkKeywords" class="form-label">Keywords (one per line)</label>
+                        <textarea class="form-control" id="bulkKeywords" rows="8" placeholder="அதிமுக&#10;AIADMK&#10;எடப்பாடி பழனிசாமி&#10;Edappadi Palaniswami"></textarea>
+                        <div class="form-text">Enter keywords one per line. Mix Tamil and English as needed.</div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="bulkLanguage" class="form-label">Default Language</label>
+                            <select class="form-select" id="bulkLanguage">
+                                <option value="ta">Tamil</option>
+                                <option value="en">English</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="bulkFrequency" class="form-label">Search Frequency (hours)</label>
+                            <select class="form-select" id="bulkFrequency">
+                                <option value="4">Every 4 Hours</option>
+                                <option value="6">Every 6 Hours</option>
+                                <option value="12">Every 12 Hours</option>
+                                <option value="24">Daily</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-warning" onclick="addBulkKeywords()">
+                    <i class="fas fa-upload"></i> Add All Keywords
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Floating Bulk Add Button -->
+<button class="btn btn-warning position-fixed" style="bottom: 80px; right: 20px;" data-bs-toggle="modal" data-bs-target="#bulkKeywordsModal" title="Bulk Add Keywords">
+    📄
+</button>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+let allKeywords = [];
+let allCompetitors = [];
+let allPlatforms = [];
+
+// Initialize page
+document.addEventListener('DOMContentLoaded', function() {
+    loadInitialData();
+});
+
+async function loadInitialData() {
+    try {
+        // Load all data in parallel
+        const [keywords, competitors, platforms] = await Promise.all([
+            apiRequest('/api/keywords'),
+            apiRequest('/api/competitors'),
+            apiRequest('/api/platforms')
+        ]);
+        
+        allKeywords = keywords;
+        allCompetitors = competitors;
+        allPlatforms = platforms;
+        
+        populateFilterDropdowns();
+        populateModalDropdowns();
+        renderKeywordsTable(allKeywords);
+        
+    } catch (error) {
+        console.error('Error loading initial data:', error);
+        showNotification('Failed to load data', 'error');
+    }
+}
+
+function populateFilterDropdowns() {
+    // Populate filter dropdowns
+    const competitorFilter = document.getElementById('filterCompetitor');
+    competitorFilter.innerHTML = '<option value="">All Competitors</option>' +
+        allCompetitors.map(comp => 
+            `<option value="${comp.competitor_id}">${comp.display_name}</option>`
+        ).join('');
+    
+    const platformFilter = document.getElementById('filterPlatform');
+    platformFilter.innerHTML = '<option value="">All Platforms</option>' +
+        allPlatforms.map(plat => 
+            `<option value="${plat.platform_id}">${plat.display_name}</option>`
+        ).join('');
+}
+
+function populateModalDropdowns() {
+    // Populate modal dropdowns
+    const competitorSelects = ['keywordCompetitor', 'bulkCompetitor'];
+    const platformSelects = ['keywordPlatform', 'bulkPlatform'];
+    
+    competitorSelects.forEach(selectId => {
+        const select = document.getElementById(selectId);
+        select.innerHTML = '<option value="">Select competitor...</option>' +
+            allCompetitors.map(comp => 
+                `<option value="${comp.competitor_id}">${comp.display_name} (${comp.short_code})</option>`
+            ).join('');
+    });
+    
+    platformSelects.forEach(selectId => {
+        const select = document.getElementById(selectId);
+        select.innerHTML = '<option value="">Select platform...</option>' +
+            allPlatforms.map(plat => 
+                `<option value="${plat.platform_id}">${plat.display_name}</option>`
+            ).join('');
+    });
+}
+
+function renderKeywordsTable(keywords) {
+    const tbody = document.getElementById('keywordsTableBody');
+    
+    if (keywords.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="10" class="text-center text-muted">No keywords found</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = keywords.map(keyword => `
+        <tr>
+            <td>
+                <span class="fw-bold">${keyword.keyword}</span>
+            </td>
+            <td>
+                <span class="badge rounded-pill" style="background-color: ${getCompetitorColor(keyword.competitor_id)}">
+                    ${keyword.competitor_name}
+                </span>
+            </td>
+            <td><span class="badge bg-secondary">${keyword.platform_name}</span></td>
+            <td>
+                <span class="badge ${keyword.language === 'ta' ? 'bg-info' : 'bg-primary'}">
+                    ${keyword.language === 'ta' ? '🇮🇳 Tamil' : '🇺🇸 English'}
+                </span>
+            </td>
+            <td><span class="badge bg-light text-dark">${keyword.keyword_type}</span></td>
+            <td>
+                <span class="badge bg-warning">
+                    ${keyword.search_frequency_hours}h
+                </span>
+            </td>
+            <td>
+                <small class="text-muted">
+                    ${keyword.last_searched ? formatDateTime(keyword.last_searched) : 'Never'}
+                </small>
+            </td>
+            <td>
+                <span class="badge bg-success">
+                    ${formatNumber(keyword.total_results_found || 0)}
+                </span>
+            </td>
+            <td>
+                <span class="badge ${keyword.is_active ? 'bg-success' : 'bg-secondary'}">
+                    ${keyword.is_active ? 'Active' : 'Inactive'}
+                </span>
+            </td>
+            <td>
+                <div class="btn-group" role="group">
+                    <button class="btn btn-sm btn-outline-primary" onclick="searchKeywordNow(${keyword.keyword_id})" title="Search Now">
+                        <i class="fas fa-search"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-warning" onclick="editKeyword(${keyword.keyword_id})" title="Edit">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteKeyword(${keyword.keyword_id}, '${keyword.keyword}')" title="Delete">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+}
+
+async function addKeyword() {
+    const keywordData = {
+        competitor_id: parseInt(document.getElementById('keywordCompetitor').value),
+        platform_id: parseInt(document.getElementById('keywordPlatform').value),
+        keyword: document.getElementById('keywordText').value.trim(),
+        language: document.getElementById('keywordLanguage').value,
+        keyword_type: document.getElementById('keywordType').value,
+        search_frequency_hours: parseInt(document.getElementById('keywordFrequency').value)
+    };
+    
+    if (!keywordData.competitor_id || !keywordData.platform_id || !keywordData.keyword) {
+        showNotification('Please fill all required fields', 'error');
+        return;
+    }
+    
+    try {
+        await apiRequest('/api/keywords', {
+            method: 'POST',
+            body: JSON.stringify(keywordData)
+        });
+        
+        const modal = bootstrap.Modal.getInstance(document.getElementById('addKeywordModal'));
+        modal.hide();
+        document.getElementById('addKeywordForm').reset();
+        
+        showNotification('Keyword added successfully', 'success');
+        loadInitialData(); // Refresh data
+        
+    } catch (error) {
+        console.error('Error adding keyword:', error);
+        showNotification('Failed to add keyword: ' + error.message, 'error');
+    }
+}
+
+async function addBulkKeywords() {
+    const keywords = document.getElementById('bulkKeywords').value.trim().split('\n').filter(k => k.trim());
+    const competitorId = parseInt(document.getElementById('bulkCompetitor').value);
+    const platformId = parseInt(document.getElementById('bulkPlatform').value);
+    const language = document.getElementById('bulkLanguage').value;
+    const frequency = parseInt(document.getElementById('bulkFrequency').value);
+    
+    if (!competitorId || !platformId || keywords.length === 0) {
+        showNotification('Please fill all required fields', 'error');
+        return;
+    }
+    
+    try {
+        let successCount = 0;
+        let errorCount = 0;
+        
+        for (const keyword of keywords) {
+            try {
+                await apiRequest('/api/keywords', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        competitor_id: competitorId,
+                        platform_id: platformId,
+                        keyword: keyword.trim(),
+                        language: language,
+                        keyword_type: 'general',
+                        search_frequency_hours: frequency
+                    })
+                });
+                successCount++;
+            } catch {
+                errorCount++;
+            }
+        }
+        
+        const modal = bootstrap.Modal.getInstance(document.getElementById('bulkKeywordsModal'));
+        modal.hide();
+        document.getElementById('bulkKeywordsForm').reset();
+        
+        showNotification(`Bulk keywords added: ${successCount} successful, ${errorCount} failed`, 
+                        errorCount === 0 ? 'success' : 'warning');
+        
+        loadInitialData(); // Refresh data
+        
+    } catch (error) {
+        console.error('Error adding bulk keywords:', error);
+        showNotification('Bulk keyword addition failed: ' + error.message, 'error');
+    }
+}
+
+async function deleteKeyword(keywordId, keywordText) {
+    if (!confirm(`Are you sure you want to delete the keyword "${keywordText}"?`)) {
+        return;
+    }
+    
+    try {
+        await apiRequest(`/api/keywords/${keywordId}`, {
+            method: 'DELETE'
+        });
+        
+        showNotification('Keyword deleted successfully', 'success');
+        loadInitialData(); // Refresh data
+        
+    } catch (error) {
+        console.error('Error deleting keyword:', error);
+        showNotification('Failed to delete keyword: ' + error.message, 'error');
+    }
+}
+
+async function searchKeywordNow(keywordId) {
+    try {
+        // Trigger immediate search for this keyword
+        await apiRequest(`/api/keywords/${keywordId}/search`, {
+            method: 'POST'
+        });
+        
+        showNotification('Keyword search initiated', 'success');
+        
+    } catch (error) {
+        console.error('Error triggering keyword search:', error);
+        showNotification('Failed to trigger search: ' + error.message, 'error');
+    }
+}
+
+function applyFilters() {
+    const competitorFilter = document.getElementById('filterCompetitor').value;
+    const platformFilter = document.getElementById('filterPlatform').value;
+    const languageFilter = document.getElementById('filterLanguage').value;
+    
+    let filteredKeywords = allKeywords;
+    
+    if (competitorFilter) {
+        filteredKeywords = filteredKeywords.filter(k => k.competitor_id == competitorFilter);
+    }
+    
+    if (platformFilter) {
+        filteredKeywords = filteredKeywords.filter(k => k.platform_id == platformFilter);
+    }
+    
+    if (languageFilter) {
+        filteredKeywords = filteredKeywords.filter(k => k.language === languageFilter);
+    }
+    
+    renderKeywordsTable(filteredKeywords);
+}
+
+function clearFilters() {
+    document.getElementById('filterCompetitor').value = '';
+    document.getElementById('filterPlatform').value = '';
+    document.getElementById('filterLanguage').value = '';
+    renderKeywordsTable(allKeywords);
+}
+
+function getCompetitorColor(competitorId) {
+    const competitor = allCompetitors.find(c => c.competitor_id === competitorId);
+    return competitor ? competitor.party_color : '#6c757d';
+}
+
+function editKeyword(keywordId) {
+    // TODO: Implement edit functionality
+    showNotification('Edit functionality coming soon', 'info');
+}
+
+// Auto-refresh function for this page
+function refreshPageData() {
+    loadInitialData();
+}
+</script>
+{% endblock %}

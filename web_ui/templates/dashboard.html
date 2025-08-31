@@ -1,0 +1,367 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Political Intelligence{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- System Status Cards -->
+    <div class="col-md-3 mb-4">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title">Active Jobs</h6>
+                        <h3 id="active-jobs-count">-</h3>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-cogs fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title">URLs Discovered</h6>
+                        <h3 id="urls-discovered-count">-</h3>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-search fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title">Content Processed</h6>
+                        <h3 id="content-processed-count">-</h3>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-chart-line fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+        <div class="card text-white bg-warning">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title">Total Engagement</h6>
+                        <h3 id="total-engagement-count">-</h3>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-heart fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Discovery by Platform Chart -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>📊 Discovery by Platform (Last 7 Days)</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="discoveryChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Engagement by Competitor Chart -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>📈 Engagement by Competitor</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="engagementChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Recent Activity -->
+    <div class="col-md-8 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between">
+                <h5>🕒 Recent Activity</h5>
+                <button class="btn btn-sm btn-outline-primary" onclick="refreshRecentActivity()">
+                    <i class="fas fa-refresh"></i> Refresh
+                </button>
+            </div>
+            <div class="card-body">
+                <div id="recent-activity" class="list-group list-group-flush">
+                    <div class="text-center text-muted">Loading...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- System Health -->
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>🔋 System Health</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">Database Connection</label>
+                    <div class="progress">
+                        <div id="db-health" class="progress-bar bg-success" style="width: 100%">Active</div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Queue System</label>
+                    <div class="progress">
+                        <div id="queue-health" class="progress-bar bg-info" style="width: 80%">Running</div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">API Services</label>
+                    <div class="progress">
+                        <div id="api-health" class="progress-bar bg-warning" style="width: 60%">Partial</div>
+                    </div>
+                </div>
+                
+                <div class="text-center">
+                    <button class="btn btn-sm btn-outline-success" onclick="checkSystemHealth()">
+                        Check Health
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions Modal -->
+<div class="modal fade" id="quickActionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">⚡ Quick Actions</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-grid gap-2">
+                    <a href="/competitors" class="btn btn-outline-primary">Add New Competitor</a>
+                    <a href="/keywords" class="btn btn-outline-success">Add Keywords</a>
+                    <a href="/manual-urls" class="btn btn-outline-info">Submit URL</a>
+                    <a href="/monitoring" class="btn btn-outline-warning">Monitor Channel</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Floating Action Button -->
+<button class="btn btn-primary position-fixed" style="bottom: 20px; right: 20px; border-radius: 50%; width: 60px; height: 60px;" data-bs-toggle="modal" data-bs-target="#quickActionModal">
+    ⚡
+</button>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+let discoveryChart, engagementChart;
+
+// Initialize dashboard
+document.addEventListener('DOMContentLoaded', function() {
+    initializeCharts();
+    loadDashboardData();
+    
+    // Refresh data every 30 seconds
+    setInterval(loadDashboardData, 30000);
+});
+
+function initializeCharts() {
+    // Discovery by Platform Chart
+    const discoveryCtx = document.getElementById('discoveryChart').getContext('2d');
+    discoveryChart = new Chart(discoveryCtx, {
+        type: 'doughnut',
+        data: {
+            labels: [],
+            datasets: [{
+                data: [],
+                backgroundColor: [
+                    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+    
+    // Engagement by Competitor Chart
+    const engagementCtx = document.getElementById('engagementChart').getContext('2d');
+    engagementChart = new Chart(engagementCtx, {
+        type: 'bar',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Total Engagement',
+                data: [],
+                backgroundColor: '#36A2EB'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+}
+
+async function loadDashboardData() {
+    try {
+        // Load analytics overview
+        const overview = await apiRequest('/api/analytics/overview');
+        updateDashboardCards(overview);
+        updateCharts(overview);
+        
+        // Load job status
+        const jobStatus = await apiRequest('/api/jobs/status');
+        updateJobStatus(jobStatus);
+        
+        // Load recent activity
+        await refreshRecentActivity();
+        
+    } catch (error) {
+        console.error('Error loading dashboard data:', error);
+        showNotification('Failed to load dashboard data', 'error');
+    }
+}
+
+function updateDashboardCards(data) {
+    const discoveryStats = data.discovery_stats || [];
+    const engagementStats = data.engagement_stats || [];
+    
+    // Calculate totals
+    const totalDiscovered = discoveryStats.reduce((sum, item) => sum + (item.discovered_urls || 0), 0);
+    const totalProcessed = engagementStats.reduce((sum, item) => sum + (item.total_content || 0), 0);
+    const totalEngagement = engagementStats.reduce((sum, item) => 
+        sum + (item.total_views || 0) + (item.total_likes || 0) + (item.total_comments || 0), 0);
+    
+    document.getElementById('urls-discovered-count').textContent = formatNumber(totalDiscovered);
+    document.getElementById('content-processed-count').textContent = formatNumber(totalProcessed);
+    document.getElementById('total-engagement-count').textContent = formatNumber(totalEngagement);
+}
+
+function updateCharts(data) {
+    // Update discovery chart
+    const platformData = {};
+    data.discovery_stats.forEach(item => {
+        if (!platformData[item.platform]) platformData[item.platform] = 0;
+        platformData[item.platform] += item.discovered_urls || 0;
+    });
+    
+    discoveryChart.data.labels = Object.keys(platformData);
+    discoveryChart.data.datasets[0].data = Object.values(platformData);
+    discoveryChart.update();
+    
+    // Update engagement chart
+    const competitorData = {};
+    data.engagement_stats.forEach(item => {
+        if (!competitorData[item.competitor]) competitorData[item.competitor] = 0;
+        competitorData[item.competitor] += (item.total_views || 0) + (item.total_likes || 0) + (item.total_comments || 0);
+    });
+    
+    engagementChart.data.labels = Object.keys(competitorData);
+    engagementChart.data.datasets[0].data = Object.values(competitorData);
+    engagementChart.update();
+}
+
+function updateJobStatus(jobStatus) {
+    const activeJobs = jobStatus.filter(job => job.status === 'running' || job.status === 'pending').length;
+    document.getElementById('active-jobs-count').textContent = activeJobs;
+}
+
+async function refreshRecentActivity() {
+    try {
+        const trends = await apiRequest('/api/analytics/trends?days=1');
+        const recentActivity = document.getElementById('recent-activity');
+        
+        if (trends.length === 0) {
+            recentActivity.innerHTML = '<div class="text-center text-muted">No recent activity</div>';
+            return;
+        }
+        
+        recentActivity.innerHTML = trends.slice(0, 10).map(item => `
+            <div class="list-group-item d-flex justify-content-between align-items-start">
+                <div class="ms-2 me-auto">
+                    <div class="fw-bold">${item.title || 'Untitled'}</div>
+                    <small class="text-muted">${item.competitor} • ${item.platform} • ${item.author}</small>
+                    <div class="mt-1">
+                        <span class="badge bg-primary rounded-pill">${formatNumber(item.views_count || 0)} views</span>
+                        <span class="badge bg-success rounded-pill">${formatNumber(item.likes_count || 0)} likes</span>
+                        <span class="badge bg-info rounded-pill">${formatNumber(item.comments_count || 0)} comments</span>
+                    </div>
+                </div>
+                <span class="badge bg-secondary rounded-pill">${((item.engagement_rate || 0) * 100).toFixed(1)}%</span>
+            </div>
+        `).join('');
+        
+    } catch (error) {
+        console.error('Error refreshing recent activity:', error);
+    }
+}
+
+async function checkSystemHealth() {
+    try {
+        const health = await apiRequest('/api/health');
+        
+        if (health.status === 'healthy') {
+            showNotification('System is healthy', 'success');
+            document.getElementById('db-health').className = 'progress-bar bg-success';
+            document.getElementById('db-health').style.width = '100%';
+            document.getElementById('db-health').textContent = 'Healthy';
+        } else {
+            showNotification('System health issues detected', 'error');
+            document.getElementById('db-health').className = 'progress-bar bg-danger';
+            document.getElementById('db-health').style.width = '100%';
+            document.getElementById('db-health').textContent = 'Error';
+        }
+        
+    } catch (error) {
+        showNotification('Health check failed', 'error');
+    }
+}
+
+// Auto-refresh function for this page
+function refreshPageData() {
+    loadDashboardData();
+}
+</script>
+
+<!-- Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+{% endblock %}

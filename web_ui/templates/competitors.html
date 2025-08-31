@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+
+{% block title %}Competitors Management - Political Intelligence{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>🏛️ Political Competitors Management</h2>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCompetitorModal">
+        <i class="fas fa-plus"></i> Add Competitor
+    </button>
+</div>
+
+<!-- Competitors Table -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped" id="competitorsTable">
+                <thead>
+                    <tr>
+                        <th>Logo</th>
+                        <th>Name</th>
+                        <th>Short Code</th>
+                        <th>Founded</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Keywords</th>
+                        <th>Sources</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="competitorsTableBody">
+                    <tr>
+                        <td colspan="9" class="text-center text-muted">Loading competitors...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add Competitor Modal -->
+<div class="modal fade" id="addCompetitorModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">🏛️ Add New Political Competitor</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addCompetitorForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="competitorName" class="form-label">Party Name *</label>
+                            <input type="text" class="form-control" id="competitorName" placeholder="e.g., All India Anna Dravida Munnetra Kazhagam" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="competitorShortCode" class="form-label">Short Code *</label>
+                            <input type="text" class="form-control" id="competitorShortCode" placeholder="e.g., AIADMK" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-8 mb-3">
+                            <label for="competitorDisplayName" class="form-label">Display Name *</label>
+                            <input type="text" class="form-control" id="competitorDisplayName" placeholder="e.g., AIADMK" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="competitorColor" class="form-label">Party Color</label>
+                            <input type="color" class="form-control form-control-color" id="competitorColor" value="#4285f4">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="competitorDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="competitorDescription" rows="3" placeholder="Brief description of the political party"></textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="competitorFoundedYear" class="form-label">Founded Year</label>
+                            <input type="number" class="form-control" id="competitorFoundedYear" min="1900" max="2025">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="competitorPriority" class="form-label">Priority Level</label>
+                            <select class="form-select" id="competitorPriority">
+                                <option value="1">High Priority</option>
+                                <option value="2">Medium Priority</option>
+                                <option value="3">Low Priority</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="competitorHeadquarters" class="form-label">Headquarters</label>
+                            <input type="text" class="form-control" id="competitorHeadquarters" placeholder="e.g., Chennai">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="competitorWebsite" class="form-label">Official Website</label>
+                        <input type="url" class="form-control" id="competitorWebsite" placeholder="https://example.com">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="addCompetitor()">
+                    <i class="fas fa-plus"></i> Add Competitor
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Load competitors data
+document.addEventListener('DOMContentLoaded', function() {
+    loadCompetitors();
+});
+
+async function loadCompetitors() {
+    try {
+        const competitors = await apiRequest('/api/competitors');
+        renderCompetitorsTable(competitors);
+    } catch (error) {
+        console.error('Error loading competitors:', error);
+        showNotification('Failed to load competitors', 'error');
+    }
+}
+
+function renderCompetitorsTable(competitors) {
+    const tbody = document.getElementById('competitorsTableBody');
+    
+    if (competitors.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted">No competitors found</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = competitors.map(comp => `
+        <tr>
+            <td>
+                <div class="rounded-circle d-inline-block" style="width: 30px; height: 30px; background-color: ${comp.party_color || '#6c757d'}"></div>
+            </td>
+            <td>
+                <div class="fw-bold">${comp.display_name}</div>
+                <small class="text-muted">${comp.name}</small>
+            </td>
+            <td><span class="badge bg-primary">${comp.short_code}</span></td>
+            <td>${comp.founded_year || '-'}</td>
+            <td>
+                <span class="badge ${comp.priority_level === 1 ? 'bg-danger' : comp.priority_level === 2 ? 'bg-warning' : 'bg-secondary'}">
+                    ${comp.priority_level === 1 ? 'High' : comp.priority_level === 2 ? 'Medium' : 'Low'}
+                </span>
+            </td>
+            <td>
+                <span class="badge ${comp.is_active ? 'bg-success' : 'bg-secondary'}">
+                    ${comp.is_active ? 'Active' : 'Inactive'}
+                </span>
+            </td>
+            <td>
+                <a href="/keywords?competitor_id=${comp.competitor_id}" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-search"></i> Keywords
+                </a>
+            </td>
+            <td>
+                <a href="/monitoring?competitor_id=${comp.competitor_id}" class="btn btn-sm btn-outline-info">
+                    <i class="fas fa-tv"></i> Sources
+                </a>
+            </td>
+            <td>
+                <div class="btn-group" role="group">
+                    <button class="btn btn-sm btn-outline-warning" onclick="editCompetitor(${comp.competitor_id})">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteCompetitor(${comp.competitor_id}, '${comp.name}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+}
+
+async function addCompetitor() {
+    const form = document.getElementById('addCompetitorForm');
+    const formData = new FormData(form);
+    
+    const competitorData = {
+        name: document.getElementById('competitorName').value.toLowerCase().replace(/\s+/g, '_'),
+        display_name: document.getElementById('competitorDisplayName').value,
+        short_code: document.getElementById('competitorShortCode').value,
+        description: document.getElementById('competitorDescription').value || null,
+        party_color: document.getElementById('competitorColor').value,
+        founded_year: document.getElementById('competitorFoundedYear').value ? parseInt(document.getElementById('competitorFoundedYear').value) : null,
+        headquarters: document.getElementById('competitorHeadquarters').value || null,
+        official_website: document.getElementById('competitorWebsite').value || null,
+        priority_level: parseInt(document.getElementById('competitorPriority').value)
+    };
+    
+    try {
+        await apiRequest('/api/competitors', {
+            method: 'POST',
+            body: JSON.stringify(competitorData)
+        });
+        
+        // Close modal and refresh table
+        const modal = bootstrap.Modal.getInstance(document.getElementById('addCompetitorModal'));
+        modal.hide();
+        form.reset();
+        
+        showNotification('Competitor added successfully', 'success');
+        loadCompetitors();
+        
+    } catch (error) {
+        console.error('Error adding competitor:', error);
+        showNotification('Failed to add competitor: ' + error.message, 'error');
+    }
+}
+
+async function deleteCompetitor(competitorId, competitorName) {
+    if (!confirm(`Are you sure you want to delete "${competitorName}"? This will also delete all associated keywords, sources, and data.`)) {
+        return;
+    }
+    
+    try {
+        await apiRequest(`/api/competitors/${competitorId}`, {
+            method: 'DELETE'
+        });
+        
+        showNotification('Competitor deleted successfully', 'success');
+        loadCompetitors();
+        
+    } catch (error) {
+        console.error('Error deleting competitor:', error);
+        showNotification('Failed to delete competitor: ' + error.message, 'error');
+    }
+}
+
+function editCompetitor(competitorId) {
+    // TODO: Implement edit functionality
+    showNotification('Edit functionality coming soon', 'info');
+}
+
+// Auto-refresh function for this page
+function refreshPageData() {
+    loadCompetitors();
+}
+</script>
+{% endblock %}

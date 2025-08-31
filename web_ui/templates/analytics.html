@@ -1,0 +1,860 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics Dashboard - Political Intelligence{% endblock %}
+
+{% block extra_head %}
+<style>
+    .analytics-header {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+    
+    .date-controls {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        padding: 1rem;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .metric-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        text-align: center;
+        border-left: 4px solid #f093fb;
+        transition: transform 0.2s ease;
+    }
+    
+    .metric-card:hover {
+        transform: translateY(-2px);
+    }
+    
+    .metric-value {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #f093fb;
+        display: block;
+        margin-bottom: 0.5rem;
+    }
+    
+    .metric-label {
+        color: #666;
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .metric-change {
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.25rem;
+    }
+    
+    .metric-change.positive {
+        color: #28a745;
+    }
+    
+    .metric-change.negative {
+        color: #dc3545;
+    }
+    
+    .metric-change.neutral {
+        color: #6c757d;
+    }
+    
+    .charts-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .chart-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .chart-title {
+        font-size: 1.2rem;
+        font-weight: bold;
+        margin-bottom: 1rem;
+        color: #333;
+        text-align: center;
+    }
+    
+    .chart-container {
+        position: relative;
+        height: 300px;
+    }
+    
+    .competitors-performance {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        margin-bottom: 2rem;
+    }
+    
+    .performance-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+    
+    .competitor-row {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr;
+        gap: 1rem;
+        padding: 1rem;
+        border-bottom: 1px solid #f0f0f0;
+        align-items: center;
+    }
+    
+    .competitor-row:hover {
+        background: #f8f9fa;
+    }
+    
+    .competitor-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .competitor-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 1.1rem;
+    }
+    
+    .competitor-name {
+        font-weight: bold;
+        color: #333;
+    }
+    
+    .metric-value-small {
+        font-weight: bold;
+        font-size: 1.1rem;
+    }
+    
+    .trend-indicator {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 0.9rem;
+    }
+    
+    .trend-up {
+        color: #28a745;
+    }
+    
+    .trend-down {
+        color: #dc3545;
+    }
+    
+    .trend-neutral {
+        color: #6c757d;
+    }
+    
+    .platform-breakdown {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .platform-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .platform-card {
+        padding: 1rem;
+        border: 2px solid #f0f0f0;
+        border-radius: 8px;
+        text-align: center;
+        transition: border-color 0.2s ease;
+    }
+    
+    .platform-card:hover {
+        border-color: #f093fb;
+    }
+    
+    .platform-icon {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .platform-name {
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+    
+    .platform-stats {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.9rem;
+        color: #666;
+    }
+    
+    .export-controls {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: bold;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-primary {
+        background: #f093fb;
+        color: white;
+    }
+    
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+    }
+    
+    .btn-success {
+        background: #28a745;
+        color: white;
+    }
+    
+    .btn:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+    }
+    
+    .loading-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255,255,255,0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+    }
+    
+    .spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid #f0f0f0;
+        border-top: 4px solid #f093fb;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .no-data {
+        text-align: center;
+        padding: 3rem;
+        color: #666;
+    }
+    
+    .form-control {
+        padding: 0.5rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 1rem;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: #f093fb;
+        box-shadow: 0 0 0 2px rgba(240, 147, 251, 0.25);
+    }
+    
+    @media (max-width: 768px) {
+        .charts-container {
+            grid-template-columns: 1fr;
+        }
+        
+        .date-controls {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .competitor-row {
+            grid-template-columns: 1fr;
+            gap: 0.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="analytics-header">
+    <h1><i class="fas fa-chart-bar"></i> Analytics Dashboard</h1>
+    <p>Comprehensive insights into political intelligence data across competitors and platforms</p>
+</div>
+
+<div class="date-controls">
+    <label for="date-range">Date Range:</label>
+    <select id="date-range" class="form-control">
+        <option value="7">Last 7 days</option>
+        <option value="30">Last 30 days</option>
+        <option value="90">Last 3 months</option>
+        <option value="365">Last year</option>
+        <option value="custom">Custom range</option>
+    </select>
+    
+    <div id="custom-date-inputs" style="display: none; gap: 1rem;">
+        <input type="date" id="start-date" class="form-control">
+        <input type="date" id="end-date" class="form-control">
+    </div>
+    
+    <button id="refresh-analytics" class="btn btn-primary">
+        <i class="fas fa-sync"></i> Refresh
+    </button>
+    
+    <div class="export-controls">
+        <button id="export-pdf" class="btn btn-secondary">
+            <i class="fas fa-file-pdf"></i> Export PDF
+        </button>
+        <button id="export-excel" class="btn btn-success">
+            <i class="fas fa-file-excel"></i> Export Excel
+        </button>
+    </div>
+</div>
+
+<div class="metrics-grid">
+    <div class="metric-card">
+        <span class="metric-value" id="total-content">0</span>
+        <div class="metric-label">Total Content Pieces</div>
+        <div class="metric-change neutral" id="content-change">
+            <i class="fas fa-minus"></i> No change
+        </div>
+    </div>
+    
+    <div class="metric-card">
+        <span class="metric-value" id="total-engagement">0</span>
+        <div class="metric-label">Total Engagement</div>
+        <div class="metric-change neutral" id="engagement-change">
+            <i class="fas fa-minus"></i> No change
+        </div>
+    </div>
+    
+    <div class="metric-card">
+        <span class="metric-value" id="avg-engagement">0</span>
+        <div class="metric-label">Avg. Engagement Rate</div>
+        <div class="metric-change neutral" id="rate-change">
+            <i class="fas fa-minus"></i> No change
+        </div>
+    </div>
+    
+    <div class="metric-card">
+        <span class="metric-value" id="top-performer">-</span>
+        <div class="metric-label">Top Performing Competitor</div>
+        <div class="metric-change neutral" id="performer-change">
+            <i class="fas fa-minus"></i> No change
+        </div>
+    </div>
+</div>
+
+<div class="charts-container">
+    <div class="chart-card">
+        <div class="chart-title">Content Discovery Over Time</div>
+        <div class="chart-container">
+            <canvas id="discovery-chart"></canvas>
+        </div>
+    </div>
+    
+    <div class="chart-card">
+        <div class="chart-title">Engagement Distribution by Platform</div>
+        <div class="chart-container">
+            <canvas id="platform-chart"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="competitors-performance">
+    <div class="performance-header">
+        <h3>Competitor Performance Analysis</h3>
+        <div>
+            <select id="sort-metric" class="form-control">
+                <option value="total_engagement">Total Engagement</option>
+                <option value="content_count">Content Count</option>
+                <option value="avg_engagement">Avg. Engagement</option>
+                <option value="engagement_rate">Engagement Rate</option>
+            </select>
+        </div>
+    </div>
+    
+    <div class="competitor-row" style="background: #f8f9fa; font-weight: bold;">
+        <div>Competitor</div>
+        <div>Content</div>
+        <div>Engagement</div>
+        <div>Avg. Engagement</div>
+        <div>Best Platform</div>
+        <div>Trend</div>
+    </div>
+    
+    <div id="competitors-list">
+        <div class="no-data">
+            <i class="fas fa-chart-bar" style="font-size: 3rem; color: #ddd; margin-bottom: 1rem;"></i>
+            <p>Loading competitor performance data...</p>
+        </div>
+    </div>
+</div>
+
+<div class="platform-breakdown">
+    <h3>Platform Performance Breakdown</h3>
+    <div class="platform-grid" id="platform-performance">
+        <div class="no-data">
+            <p>Loading platform performance data...</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+let analyticsData = {};
+let discoveryChart = null;
+let platformChart = null;
+
+// WebSocket connection for real-time updates
+let ws = null;
+
+function connectWebSocket() {
+    ws = new WebSocket(`ws://${window.location.host}/ws/analytics`);
+    
+    ws.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+        if (data.type === 'analytics_update') {
+            loadAnalytics();
+        }
+    };
+    
+    ws.onclose = function() {
+        setTimeout(connectWebSocket, 5000);
+    };
+}
+
+async function loadAnalytics() {
+    const dateRange = document.getElementById('date-range').value;
+    let startDate, endDate;
+    
+    if (dateRange === 'custom') {
+        startDate = document.getElementById('start-date').value;
+        endDate = document.getElementById('end-date').value;
+        
+        if (!startDate || !endDate) {
+            alert('Please select both start and end dates');
+            return;
+        }
+    } else {
+        const days = parseInt(dateRange);
+        endDate = new Date().toISOString().split('T')[0];
+        startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    }
+    
+    try {
+        showLoadingOverlays();
+        
+        const response = await fetch(`/api/analytics/summary?start_date=${startDate}&end_date=${endDate}`);
+        analyticsData = await response.json();
+        
+        updateMetrics(analyticsData.metrics);
+        updateCharts(analyticsData.charts);
+        updateCompetitorPerformance(analyticsData.competitors);
+        updatePlatformBreakdown(analyticsData.platforms);
+        
+        hideLoadingOverlays();
+        
+    } catch (error) {
+        console.error('Failed to load analytics:', error);
+        hideLoadingOverlays();
+    }
+}
+
+function updateMetrics(metrics) {
+    document.getElementById('total-content').textContent = formatNumber(metrics.total_content);
+    document.getElementById('total-engagement').textContent = formatNumber(metrics.total_engagement);
+    document.getElementById('avg-engagement').textContent = formatNumber(metrics.avg_engagement_rate, 2) + '%';
+    document.getElementById('top-performer').textContent = metrics.top_performer || '-';
+    
+    // Update change indicators
+    updateChangeIndicator('content-change', metrics.content_change);
+    updateChangeIndicator('engagement-change', metrics.engagement_change);
+    updateChangeIndicator('rate-change', metrics.rate_change);
+    updateChangeIndicator('performer-change', metrics.performer_change);
+}
+
+function updateChangeIndicator(elementId, change) {
+    const element = document.getElementById(elementId);
+    if (!change) return;
+    
+    const value = parseFloat(change.value);
+    const isPositive = value > 0;
+    const isNegative = value < 0;
+    
+    element.className = `metric-change ${isPositive ? 'positive' : isNegative ? 'negative' : 'neutral'}`;
+    
+    const icon = isPositive ? 'fa-arrow-up' : isNegative ? 'fa-arrow-down' : 'fa-minus';
+    const text = value === 0 ? 'No change' : `${Math.abs(value).toFixed(1)}% ${change.period || ''}`;
+    
+    element.innerHTML = `<i class="fas ${icon}"></i> ${text}`;
+}
+
+function updateCharts(chartData) {
+    updateDiscoveryChart(chartData.discovery_timeline);
+    updatePlatformChart(chartData.platform_distribution);
+}
+
+function updateDiscoveryChart(data) {
+    const ctx = document.getElementById('discovery-chart').getContext('2d');
+    
+    if (discoveryChart) {
+        discoveryChart.destroy();
+    }
+    
+    discoveryChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: data.labels,
+            datasets: [{
+                label: 'Content Discovered',
+                data: data.values,
+                borderColor: '#f093fb',
+                backgroundColor: 'rgba(240, 147, 251, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+}
+
+function updatePlatformChart(data) {
+    const ctx = document.getElementById('platform-chart').getContext('2d');
+    
+    if (platformChart) {
+        platformChart.destroy();
+    }
+    
+    const colors = ['#f093fb', '#f5576c', '#4facfe', '#00f2fe', '#43e97b', '#38f9d7'];
+    
+    platformChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: data.labels,
+            datasets: [{
+                data: data.values,
+                backgroundColor: colors.slice(0, data.labels.length),
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+}
+
+function updateCompetitorPerformance(competitors) {
+    const competitorsList = document.getElementById('competitors-list');
+    
+    if (!competitors || competitors.length === 0) {
+        competitorsList.innerHTML = `
+            <div class="no-data">
+                <p>No competitor performance data available for selected period</p>
+            </div>
+        `;
+        return;
+    }
+    
+    // Sort competitors based on selected metric
+    const sortMetric = document.getElementById('sort-metric').value;
+    competitors.sort((a, b) => (b[sortMetric] || 0) - (a[sortMetric] || 0));
+    
+    competitorsList.innerHTML = competitors.map(competitor => {
+        const avatarColor = getCompetitorColor(competitor.name);
+        const initials = competitor.name.substring(0, 2);
+        
+        return `
+            <div class="competitor-row">
+                <div class="competitor-info">
+                    <div class="competitor-avatar" style="background: ${avatarColor}">
+                        ${initials}
+                    </div>
+                    <div class="competitor-name">${competitor.name}</div>
+                </div>
+                <div class="metric-value-small">${formatNumber(competitor.content_count)}</div>
+                <div class="metric-value-small">${formatNumber(competitor.total_engagement)}</div>
+                <div class="metric-value-small">${formatNumber(competitor.avg_engagement, 1)}</div>
+                <div class="metric-value-small">${competitor.best_platform || '-'}</div>
+                <div class="trend-indicator ${getTrendClass(competitor.trend)}">
+                    <i class="fas ${getTrendIcon(competitor.trend)}"></i>
+                    ${formatTrend(competitor.trend)}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function updatePlatformBreakdown(platforms) {
+    const platformGrid = document.getElementById('platform-performance');
+    
+    if (!platforms || platforms.length === 0) {
+        platformGrid.innerHTML = '<div class="no-data"><p>No platform performance data available</p></div>';
+        return;
+    }
+    
+    platformGrid.innerHTML = platforms.map(platform => {
+        return `
+            <div class="platform-card">
+                <div class="platform-icon">${getPlatformIcon(platform.name)}</div>
+                <div class="platform-name">${platform.name}</div>
+                <div class="platform-stats">
+                    <div>
+                        <strong>${formatNumber(platform.content_count)}</strong>
+                        <br><small>Content</small>
+                    </div>
+                    <div>
+                        <strong>${formatNumber(platform.total_engagement)}</strong>
+                        <br><small>Engagement</small>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// Utility functions
+function formatNumber(num, decimals = 0) {
+    if (num == null) return '0';
+    
+    if (num >= 1000000) {
+        return (num / 1000000).toFixed(decimals) + 'M';
+    } else if (num >= 1000) {
+        return (num / 1000).toFixed(decimals) + 'K';
+    }
+    return num.toFixed(decimals);
+}
+
+function getCompetitorColor(name) {
+    const colors = {
+        'ADMK': '#e74c3c',
+        'DMK': '#f39c12',
+        'BJP': '#e67e22',
+        'NTK': '#3498db',
+        'PMK': '#2ecc71',
+        'TVK': '#9b59b6',
+        'DMDK': '#34495e'
+    };
+    return colors[name] || '#95a5a6';
+}
+
+function getPlatformIcon(name) {
+    const icons = {
+        'Facebook': '📘',
+        'Twitter': '🐦',
+        'Instagram': '📷',
+        'YouTube': '📹',
+        'Telegram': '✈️',
+        'WhatsApp': '💬',
+        'News Websites': '📰'
+    };
+    return icons[name] || '🌐';
+}
+
+function getTrendClass(trend) {
+    if (!trend) return 'trend-neutral';
+    return trend > 0 ? 'trend-up' : trend < 0 ? 'trend-down' : 'trend-neutral';
+}
+
+function getTrendIcon(trend) {
+    if (!trend) return 'fa-minus';
+    return trend > 0 ? 'fa-arrow-up' : trend < 0 ? 'fa-arrow-down' : 'fa-minus';
+}
+
+function formatTrend(trend) {
+    if (!trend) return 'No change';
+    const value = Math.abs(trend).toFixed(1);
+    return `${value}%`;
+}
+
+function showLoadingOverlays() {
+    // Add loading overlays to chart containers and data sections
+    document.querySelectorAll('.chart-container, .competitors-performance, .platform-breakdown').forEach(container => {
+        const overlay = document.createElement('div');
+        overlay.className = 'loading-overlay';
+        overlay.innerHTML = '<div class="spinner"></div>';
+        container.appendChild(overlay);
+    });
+}
+
+function hideLoadingOverlays() {
+    document.querySelectorAll('.loading-overlay').forEach(overlay => {
+        overlay.remove();
+    });
+}
+
+// Export functions
+async function exportToPDF() {
+    try {
+        const response = await fetch('/api/analytics/export/pdf', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                date_range: document.getElementById('date-range').value,
+                start_date: document.getElementById('start-date').value,
+                end_date: document.getElementById('end-date').value
+            })
+        });
+        
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'political-intelligence-analytics.pdf';
+            a.click();
+            window.URL.revokeObjectURL(url);
+        } else {
+            alert('Failed to export PDF');
+        }
+    } catch (error) {
+        console.error('Export error:', error);
+        alert('Export failed');
+    }
+}
+
+async function exportToExcel() {
+    try {
+        const response = await fetch('/api/analytics/export/excel', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                date_range: document.getElementById('date-range').value,
+                start_date: document.getElementById('start-date').value,
+                end_date: document.getElementById('end-date').value
+            })
+        });
+        
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'political-intelligence-analytics.xlsx';
+            a.click();
+            window.URL.revokeObjectURL(url);
+        } else {
+            alert('Failed to export Excel');
+        }
+    } catch (error) {
+        console.error('Export error:', error);
+        alert('Export failed');
+    }
+}
+
+// Event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    loadAnalytics();
+    connectWebSocket();
+    
+    // Date range change
+    document.getElementById('date-range').addEventListener('change', function() {
+        const customInputs = document.getElementById('custom-date-inputs');
+        customInputs.style.display = this.value === 'custom' ? 'flex' : 'none';
+        
+        if (this.value !== 'custom') {
+            loadAnalytics();
+        }
+    });
+    
+    // Custom date inputs
+    document.getElementById('start-date').addEventListener('change', loadAnalytics);
+    document.getElementById('end-date').addEventListener('change', loadAnalytics);
+    
+    // Refresh button
+    document.getElementById('refresh-analytics').addEventListener('click', loadAnalytics);
+    
+    // Sort metric change
+    document.getElementById('sort-metric').addEventListener('change', function() {
+        if (analyticsData.competitors) {
+            updateCompetitorPerformance(analyticsData.competitors);
+        }
+    });
+    
+    // Export buttons
+    document.getElementById('export-pdf').addEventListener('click', exportToPDF);
+    document.getElementById('export-excel').addEventListener('click', exportToExcel);
+    
+    // Set default end date to today
+    document.getElementById('end-date').value = new Date().toISOString().split('T')[0];
+    document.getElementById('start-date').value = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+});
+</script>
+{% endblock %}

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Political Intelligence Dashboard{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom CSS -->
+    <link href="/static/css/dashboard.css" rel="stylesheet">
+    
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">
+                🏛️ Political Intelligence Dashboard
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">📊 Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/competitors">🏛️ Competitors</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/keywords">🔍 Keywords</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/manual-urls">📎 Manual URLs</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/monitoring">📺 Monitoring</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/analytics">📈 Analytics</a>
+                    </li>
+                </ul>
+                
+                <!-- Status indicator -->
+                <div class="navbar-text">
+                    <span id="connection-status" class="badge bg-success">🟢 Connected</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Main content -->
+    <div class="container-fluid mt-4">
+        {% block content %}{% endblock %}
+    </div>
+    
+    <!-- Toast notifications -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="notification-toast" class="toast" role="alert">
+            <div class="toast-header">
+                <strong class="me-auto">Notification</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body"></div>
+        </div>
+    </div>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- WebSocket connection -->
+    <script>
+        // WebSocket for real-time updates
+        const ws = new WebSocket(`ws://${window.location.host}/ws`);
+        
+        ws.onopen = function(event) {
+            document.getElementById('connection-status').innerHTML = '🟢 Connected';
+            document.getElementById('connection-status').className = 'badge bg-success';
+        };
+        
+        ws.onclose = function(event) {
+            document.getElementById('connection-status').innerHTML = '🔴 Disconnected';
+            document.getElementById('connection-status').className = 'badge bg-danger';
+        };
+        
+        ws.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            handleWebSocketMessage(data);
+        };
+        
+        function handleWebSocketMessage(data) {
+            if (data.type === 'heartbeat') return;
+            
+            // Show notification for important events
+            if (['competitor_added', 'keyword_added', 'source_added', 'manual_url_processed'].includes(data.type)) {
+                showNotification(`${data.type.replace('_', ' ').toUpperCase()}`, 'success');
+                
+                // Refresh current page data if relevant
+                if (typeof refreshPageData === 'function') {
+                    refreshPageData();
+                }
+            }
+        }
+        
+        function showNotification(message, type = 'info') {
+            const toast = document.getElementById('notification-toast');
+            const toastBody = toast.querySelector('.toast-body');
+            toastBody.textContent = message;
+            
+            toast.className = `toast border-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'}`;
+            
+            const bsToast = new bootstrap.Toast(toast);
+            bsToast.show();
+        }
+        
+        // Utility functions
+        async function apiRequest(url, options = {}) {
+            const response = await fetch(url, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                },
+                ...options
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            return response.json();
+        }
+        
+        function formatDateTime(dateString) {
+            return new Date(dateString).toLocaleString();
+        }
+        
+        function formatNumber(num) {
+            return new Intl.NumberFormat().format(num);
+        }
+    </script>
+    
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>
