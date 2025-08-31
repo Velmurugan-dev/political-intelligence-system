@@ -1,0 +1,161 @@
+# Competitors Configuration
+# Add or modify political parties here
+# Each party can have Tamil and English keywords
+
+competitors:
+  AIADMK:
+    priority: true  # Gets 2x data limits
+    limits_multiplier: 2.0
+    tamil_keywords:
+      - "அ.இ.அ.த.மு.க"
+      - "அதிமுக"
+      - "எடப்பாடி பழனிசாமி"
+      - "ஓ.பன்னீர்செல்வம்"
+      - "ஜெயலலிதா"
+      - "எம்.ஜி.ஆர்"
+      - "இரட்டை இலை"
+      - "அதிமுக ஆட்சி"
+    english_keywords:
+      - "AIADMK"
+      - "Edappadi Palaniswami"
+      - "O Panneerselvam"
+      - "EPS"
+      - "OPS"
+      - "Jayalalithaa legacy"
+      - "MGR legacy"
+      - "Two Leaves symbol"
+  
+  DMK:
+    priority: false
+    limits_multiplier: 1.0
+    tamil_keywords:
+      - "திமுக"
+      - "திராவிட முன்னேற்ற கழகம்"
+      - "ஸ்டாலின்"
+      - "கலைஞர்"
+      - "மு.க.ஸ்டாலின்"
+      - "கருணாநிதி"
+      - "திமுக ஆட்சி"
+      - "சூரியன் சின்னம்"
+    english_keywords:
+      - "DMK"
+      - "Dravida Munnetra Kazhagam"
+      - "Stalin"
+      - "M K Stalin"
+      - "Kalaignar"
+      - "Karunanidhi"
+      - "DMK government"
+      - "Rising Sun symbol"
+  
+  BJP:
+    priority: false
+    limits_multiplier: 1.0
+    tamil_keywords:
+      - "பாஜக"
+      - "பாரதீய ஜனதா"
+      - "அண்ணாமலை"
+      - "மோடி"
+      - "பாஜக கூட்டணி"
+      - "தாமரை சின்னம்"
+    english_keywords:
+      - "BJP"
+      - "Bharatiya Janata Party"
+      - "Annamalai"
+      - "Modi"
+      - "BJP alliance"
+      - "Lotus symbol"
+      - "BJP Tamil Nadu"
+  
+  TVK:
+    priority: false
+    limits_multiplier: 1.0
+    tamil_keywords:
+      - "தமிழக வெற்றி கழகம்"
+      - "திவிக"
+      - "விஜய்"
+      - "தளபதி விஜய்"
+      - "TVK"
+    english_keywords:
+      - "TVK"
+      - "Tamilaga Vettri Kazhagam"
+      - "Vijay"
+      - "Thalapathy Vijay"
+      - "Actor Vijay party"
+  
+  VCK:
+    priority: false
+    limits_multiplier: 1.0
+    tamil_keywords:
+      - "விடுதலை சிறுத்தைகள்"
+      - "விசிக"
+      - "திருமாவளவன்"
+      - "பாம்பு சின்னம்"
+    english_keywords:
+      - "VCK"
+      - "Viduthalai Chiruthaigal Katchi"
+      - "Thol Thirumavalavan"
+      - "Snake symbol"
+  
+  NTK:
+    priority: false
+    limits_multiplier: 1.0
+    tamil_keywords:
+      - "நாம் தமிழர்"
+      - "நாம் தமிழர் கட்சி"
+      - "சீமான்"
+      - "தமிழ் தேசியம்"
+      - "புலி சின்னம்"
+    english_keywords:
+      - "NTK"
+      - "Naam Tamilar Katchi"
+      - "Seeman"
+      - "Tamil nationalism"
+      - "Tiger symbol"
+  
+  CPI:
+    priority: false
+    limits_multiplier: 1.0
+    tamil_keywords:
+      - "கம்யூனிஸ்ட்"
+      - "சிபிஐ"
+      - "இடதுசாரி"
+      - "சதுர சின்னம்"
+    english_keywords:
+      - "CPI"
+      - "Communist Party"
+      - "Communist Party of India"
+      - "Left parties"
+      - "Square symbol"
+  
+  DMDK:
+    priority: false
+    limits_multiplier: 1.0
+    tamil_keywords:
+      - "தேமுதிக"
+      - "விஜயகாந்த்"
+      - "பிரேமலதா"
+      - "தேசிய முற்போக்கு திராவிட கழகம்"
+    english_keywords:
+      - "DMDK"
+      - "Desiya Murpokku Dravida Kazhagam"
+      - "Vijayakanth"
+      - "Premalatha"
+      - "Captain Vijayakanth"
+      - "Golden Eagle"
+
+# Instructions for adding new competitors:
+# 1. Add a new entry under 'competitors' with the party name
+# 2. Set 'priority' to true only for main focus parties (gets 2x limits)
+# 3. Set 'limits_multiplier' (1.0 for standard, 2.0 for enhanced)
+# 4. Add relevant Tamil keywords in 'tamil_keywords' list
+# 5. Add relevant English keywords in 'english_keywords' list
+# 6. Save the file - scrapers will automatically use new competitors
+
+# Example of adding a new party:
+# NEW_PARTY:
+#   priority: false
+#   limits_multiplier: 1.0
+#   tamil_keywords:
+#     - "தமிழ் கீவேர்ட்"
+#   english_keywords:
+#     - "English keyword"

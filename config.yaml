@@ -1,0 +1,171 @@
+# System Configuration
+# Main configuration file for the political scraper system
+
+# Default scraping limits (for non-priority parties)
+default_limits:
+  posts: 100      # YouTube, Twitter, Facebook, Instagram, Reddit posts
+  comments: 500   # Comments per platform
+
+# Enhanced limits (for priority parties like AIADMK)
+enhanced_limits:
+  posts: 200      # 2x the default
+  comments: 1000  # 2x the default
+
+# Platform-specific limits (optional overrides)
+platform_limits:
+  youtube:
+    default_posts: 100
+    default_comments: 500
+    enhanced_posts: 200
+    enhanced_comments: 1000
+  twitter:
+    default_posts: 150
+    default_comments: 300
+    enhanced_posts: 300
+    enhanced_comments: 600
+  facebook:
+    default_posts: 100
+    default_comments: 400
+    enhanced_posts: 200
+    enhanced_comments: 800
+  instagram:
+    default_posts: 80
+    default_comments: 200
+    enhanced_posts: 150
+    enhanced_comments: 400
+  reddit:
+    default_posts: 100
+    default_comments: 300
+    enhanced_posts: 150
+    enhanced_comments: 500
+  tamil_news:
+    default_posts: 200
+    default_comments: 0  # News sites rarely have accessible comments
+    enhanced_posts: 400
+    enhanced_comments: 0
+
+# Timeframe settings
+timeframe:
+  default_start: "2025-06-01"
+  default_end: "2025-06-07"
+  timezone: "Asia/Kolkata"
+
+# Scraping behavior configuration
+scraping:
+  # Delays between requests (in seconds)
+  delay_min: 2
+  delay_max: 5
+  
+  # Request timeout (in seconds)
+  timeout: 30
+  
+  # Retry configuration
+  retries: 3
+  retry_delay: 5
+  
+  # Parallel execution
+  parallel_scrapers: 3  # Number of scrapers to run in parallel
+  timeout_per_scraper: 600  # 10 minutes timeout per scraper
+  
+  # Rate limiting
+  requests_per_minute: 30
+  burst_size: 5
+
+# Method priorities (order of attempting scraping methods)
+method_priorities:
+  youtube:
+    - "playwright"
+    - "yt_dlp"
+    - "web_apis"
+    - "basic_http"
+  twitter:
+    - "snscrape"
+    - "playwright"
+    - "web_apis"
+    - "basic_http"
+  facebook:
+    - "facebook_scraper"
+    - "playwright"
+    - "web_apis"
+    - "basic_http"
+  instagram:
+    - "instaloader"
+    - "playwright"
+    - "web_apis"
+    - "basic_http"
+  reddit:
+    - "pushshift"
+    - "basic_http"
+    - "playwright"
+    - "web_apis"
+  tamil_news:
+    - "basic_http"
+    - "newspaper"
+    - "playwright"
+    - "web_apis"
+
+# Browser configuration (for Playwright)
+browser:
+  headless: true
+  viewport:
+    width: 1920
+    height: 1080
+  locale: "en-US"
+  args:
+    - "--disable-blink-features=AutomationControlled"
+    - "--disable-features=IsolateOrigins,site-per-process"
+    - "--disable-setuid-sandbox"
+    - "--disable-dev-shm-usage"
+    - "--no-sandbox"
+
+# AI configuration (for Method 3)
+ai_services:
+  primary: "anthropic"
+  secondary: "openai"
+  fallback: "gemini"
+  max_tokens: 1000
+  temperature: 0.3
+
+# Data quality settings
+data_quality:
+  min_content_length: 20  # Minimum characters for valid content
+  deduplication: true
+  validate_dates: true
+  filter_empty: true
+
+# Logging configuration
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+  file: "logs/scraper.log"
+  rotation: "daily"
+  retention_days: 30
+  console_output: true
+
+# Error handling
+error_handling:
+  continue_on_error: true
+  max_consecutive_failures: 5
+  circuit_breaker_threshold: 10
+  recovery_timeout: 300  # 5 minutes
+
+# Storage settings
+storage:
+  batch_size: 50  # Number of items to store in one batch
+  index_creation: true
+  duplicate_handling: "skip"  # skip, update, error
+
+# Performance optimization
+performance:
+  memory_limit_mb: 4096
+  cpu_cores: "auto"  # auto, or specific number
+  batch_processing: true
+  cache_enabled: true
+  cache_ttl: 3600  # 1 hour
+
+# Development/Debug settings
+debug:
+  save_screenshots: false
+  screenshot_path: "screenshots/"
+  verbose_logging: false
+  dry_run: false  # If true, don't save to database
+  test_limit: 5   # Limit for test runs

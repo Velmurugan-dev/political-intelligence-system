@@ -1,0 +1,46 @@
+# Enhanced Requirements for Political Scraper
+# Two-stage scraping with PostgreSQL support
+
+# Core Dependencies
+python-dotenv==1.0.0
+PyYAML==6.0.1
+
+# Database - PostgreSQL (Supabase)
+asyncpg>=0.28.0
+psycopg2-binary>=2.9.7
+
+# Legacy MongoDB support (optional)
+pymongo[srv]==4.6.1
+motor==3.3.2
+
+# Method 1: Browser Automation
+playwright>=1.49.0
+
+# Method 2: Essential Specialized Libraries
+yt-dlp>=2023.12.30
+snscrape>=0.7.0  # Works for Twitter AND Reddit without API
+instaloader>=4.10.3
+facebook-scraper>=0.2.59
+
+# Method 3: Web APIs (only free/public ones)
+aiohttp>=3.9.1
+google-search-results>=2.4.0
+
+# Method 4: Basic HTTP and Parsing
+requests>=2.31.0
+beautifulsoup4>=4.12.2
+lxml>=4.9.3
+feedparser>=6.0.11
+
+# Content Extraction
+newspaper3k>=0.2.8
+trafilatura>=1.6.3
+
+# Essential Utilities
+fake-useragent>=1.4.0
+python-dateutil>=2.8.2
+pytz>=2023.3
+
+# Performance
+tqdm>=4.66.1
+tenacity>=8.2.3
